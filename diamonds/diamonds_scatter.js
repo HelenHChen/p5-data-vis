@@ -6,8 +6,8 @@ var cut = {Fair: 0, Good: 1, "Very Good": 2, Premium: 3, Ideal: 4};
 var colors = {J: 0, I: 1, H: 2, G: 3, F: 4, E: 5, D: 6};
 var clarity = {I1: 0, SI1: 1, SI2: 2, VS1: 3, VS2: 4, VVS1: 5, VVS2: 6, IF: 7};
 
-var minData = [0, 0, 0, 0, 0, 43, 43, 326, 0, 0, 0];
-var maxData = [0, 5, 4, 6, 7, 79, 95, 18823, 11, 59, 32];
+var maxData = [0, 0, 0, 0, 0, 43, 43, 326, 0, 0, 0];
+var minData = [0, 5, 4, 6, 7, 79, 95, 18823, 11, 59, 32];
 var rowCount;
 
 
@@ -29,7 +29,7 @@ var colorEncode = {
 var shapeEncode = {stroke: 51, strokeWeight: 0.8, size: 3};
 
 function preload() {
-	source = loadTable("data/diamonds500.csv", "csv", "header");
+	source = loadTable("data/diamonds100.csv", "csv", "header");
 }
 
 function setup() {
@@ -41,7 +41,21 @@ function setup() {
 		source.setNum(i, "cut", cut[source.getString(i,"cut")]);
 		source.setNum(i, "color", colors[source.getString(i,"color")]);
 		source.setNum(i, "clarity", clarity[source.getString(i,"clarity")]);
+		
+		for (var c = 1; c < attr.length; c++) {
+			var data = source.getNum(i, c);
+			if (data < minData[c]) {
+				minData[c] = data;
+			}
+			if (data > maxData[c]) {
+				maxData[c] = data;
+			}
+		}
+		
 	}
+	
+	console.log(minData);
+	console.log(maxData);
 	
     plotX1 = majorPad;
     plotX2 = width - majorPad;
@@ -196,46 +210,6 @@ function plotData(encoding) {
 					point(x,y);
 				}
 				
-				
-				// switch (source.getString(data, category.name)) {
-// 							case classes[0]:
-// 								if (encoding === "color") {
-// 									stroke(30, 144, 255, 120);	//dodgerblue
-// 									strokeWeight(colorEncode.strokeWeight);
-// 									point(x, y);
-// 								} else if (encoding === "shape") {
-// 									stroke(shapeEncode.stroke);
-// 									strokeWeight(shapeEncode.strokeWeight);
-// 									noFill();
-// 									ellipse(x,y, shapeEncode.size, shapeEncode.size);
-// 								}
-// 								break;
-// 							case classes[1]:
-// 								if (encoding === "color") {
-// 									stroke(0, 238, 118, 120);	//springgreen 1
-// 									strokeWeight(colorEncode.strokeWeight);
-// 									point(x, y);
-// 								} else if (encoding === "shape") {
-// 									stroke(shapeEncode.stroke);
-// 									strokeWeight(shapeEncode.strokeWeight);
-// 									noFill();
-// 									triangle(x, y - shapeEncode.size/2, x - shapeEncode.size/1.73, y + shapeEncode.size/2, x + shapeEncode.size/1.73, y + shapeEncode.size/2);
-// 								}
-// 								break;
-// 							case classes[2]:
-// 								if (encoding === "color") {
-// 									stroke(255, 185, 15, 120);	//darkgoldenrod 1
-// 									strokeWeight(colorEncode.strokeWeight);
-// 									point(x, y);
-// 								} else if (encoding === "shape") {
-// 									stroke(shapeEncode.stroke);
-// 									strokeWeight(shapeEncode.strokeWeight);
-// 									noFill();
-// 									rectMode(CENTER);
-// 									rect(x, y, shapeEncode.size, shapeEncode.size);
-// 								}
-// 								break;
-// 						}
 				attrX--;
 			}	
 			attrY++;
