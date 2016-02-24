@@ -18,7 +18,7 @@ var gridWidth;
 var tickLen = 5;
 var tickLabelDist = tickLen * 1.5;
 var labelPad = 1;
-var plotX1, plotY1, plotX2, plotY2, xTitle, yTitle, xAxisLabelX, xAxisLabelY, yAxisLabelX, yAxisLabelY;
+var plotX1, plotY1, plotX2, plotY2, xTitle, yTitle, xAxisLabelX, xAxisLabelY, yAxisLabelX, yAxisLabelY, xLegend, yLegend;
 var gridX, gridY;
 var axisIntervalFreq = 4;
 var axisIntervals = [0, 0.5, 1, 1, 1, 5, 10, 2000, 2, 10, 5];
@@ -66,9 +66,6 @@ function setup() {
 		axisIntervals[i] = interval;
 	}
 	
-	console.log(minData);
-	console.log(maxData);
-	
     plotX1 = majorPad;
     plotX2 = width - majorPad;
     plotY1 = height - (width - 2 * majorPad) - majorPad;
@@ -90,6 +87,9 @@ function setup() {
     xAxisLabelY = height - 25;
 	yAxisLabelY = (plotY1 + plotY2)/2;
 	
+	xLegend = plotX2 - gridWidth * 2;
+	yLegend = plotY2 - gridWidth * 2;
+	
 }
 
 function draw() {
@@ -101,6 +101,7 @@ function draw() {
 	
 	drawAxisLabels();
 	plotData("color");
+	drawLegend("color");
 	
 }
 
@@ -177,6 +178,38 @@ function drawAxisLabels() {
 
 		}
 		
+	}
+	
+}
+
+function drawLegend(encoding) {
+	
+	var padding = 10;
+	var yBands = (gridWidth * 2 - padding * 2)/(classes.length + 1);
+	var keySize = yBands * 0.6;
+	
+	//draw rectangle around legend box
+	rectMode(CORNER);
+	noFill();
+	strokeWeight(1);
+	stroke(169, 169, 169);
+	rect(xLegend, yLegend, gridWidth * 2, gridWidth * 2);
+	
+	//legend title
+	textSize(24);
+	textAlign(CENTER, CENTER);
+	fill(0);
+	noStroke();
+	text(category.name, xLegend + gridWidth, yLegend + padding + yBands/2);
+	
+	//legend key
+	textSize(14);
+	for (var i = 0; i < classes.length; i++) {
+		fill(colorEncode.colors[i]);
+		textAlign(LEFT, CENTER);
+		text(classes[i], xLegend + 5 * padding + keySize, yLegend + padding + yBands * (i + 1) + yBands/2);
+		rectMode(CENTER);
+		rect(xLegend + 3 * padding, yLegend + padding + yBands * (i + 1) + yBands/2, keySize, keySize);
 	}
 	
 }
