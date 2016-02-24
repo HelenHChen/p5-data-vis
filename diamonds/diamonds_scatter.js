@@ -2,6 +2,7 @@ var source;
 var attr = ["","carat","cut","color","clarity","depth","table","price","x","y","z"];
 var category = {name: "cut", index: 2};	//category = cut
 var classes = ["Fair", "Good", "Very Good", "Premium", "Ideal"];
+var useAttr = [1, 5, 6, 7, 8, 9, 10];
 var cut = {Fair: 0, Good: 1, "Very Good": 2, Premium: 3, Ideal: 4};
 var colors = {J: 0, I: 1, H: 2, G: 3, F: 4, E: 5, D: 6};
 var clarity = {I1: 0, SI1: 1, SI2: 2, VS1: 3, VS2: 4, VVS1: 5, VVS2: 6, IF: 7};
@@ -15,10 +16,11 @@ var rowCount;
 var majorPad = 50;
 var gridWidth;
 var tickLen = 5;
-var tickLabelDist = tickLen * 2.5;
+var tickLabelDist = tickLen * 1.5;
 var labelPad = 1;
 var plotX1, plotY1, plotX2, plotY2, xTitle, yTitle, xAxisLabelX, xAxisLabelY, yAxisLabelX, yAxisLabelY;
 var gridX, gridY;
+var axisIntervalFreq = 4;
 var axisIntervals = [0, 0.5, 1, 1, 1, 5, 10, 2000, 2, 10, 5];
 
 // plot points attributes
@@ -35,8 +37,9 @@ function preload() {
 function setup() {
 	
 	createCanvas(950, 1000);
-
 	rowCount = source.getRowCount();
+	
+	//get min and max
 	for (var i = 0; i < rowCount; i++) {
 		source.setNum(i, "cut", cut[source.getString(i,"cut")]);
 		source.setNum(i, "color", colors[source.getString(i,"color")]);
@@ -54,6 +57,15 @@ function setup() {
 		
 	}
 	
+	//update axisIntervals based on min and max
+	for (var i = 1; i < axisIntervals.length; i++) {
+		var interval = (ceil(maxData[i]) - floor(minData[i]))/axisIntervalFreq;
+		if (maxData[i] > 10) {
+			interval = Math.round(interval);
+		}
+		axisIntervals[i] = interval;
+	}
+	
 	console.log(minData);
 	console.log(maxData);
 	
@@ -62,12 +74,10 @@ function setup() {
     plotY1 = height - (width - 2 * majorPad) - majorPad;
     plotY2 = height - majorPad;
 
-	//modified for this data set: subtracting 2 from attr.length
-	//since one primary column and one category column do not count as attributes
-	gridWidth = (width - 2 * majorPad)/(attr.length - 2);		
+	gridWidth = (width - 2 * majorPad)/(useAttr.length);		
 	gridX = [];
 	gridY = [];
-	for (var i = 0; i < attr.length - 2; i++) {
+	for (var i = 0; i < useAttr.length; i++) {
 		gridX.push(plotX1 + i * gridWidth);
 		gridY.push(plotY1 + i * gridWidth);
 	}
@@ -89,7 +99,7 @@ function draw() {
 	
 	strokeWeight(1);
 	
-	//drawAxisLabels();
+	drawAxisLabels();
 	plotData("color");
 	
 }
@@ -119,14 +129,8 @@ function drawChartText() {
 	// draw attribute text
 	textSize(14);
 	textAlign(CENTER, CENTER);
-	var attr_count = 1;
-	for (var i = 0; i < attr.length - 2; i++) {
-		if (attr_count !== category.index) {
-			text(attr[attr_count], gridX[attr.length - 3 - i] + gridWidth/2, gridY[i] + gridWidth/2);			
-		} else {
-			i--;
-		}
-		attr_count++;
+	for (var i = 0; i < useAttr.length; i++) {
+		text(attr[useAttr[i]], gridX[gridX.length - 1 - i] + gridWidth/2, gridY[i] + gridWidth/2);			
 	}
 	
 }
@@ -136,84 +140,60 @@ function drawAxisLabels() {
 	textSize(10);
 	strokeWeight(1);
 	
-	for (var currAttr = 0; currAttr < attr.length; currAttr++) {
+	for (var count = 0; count < useAttr.length; count++) {
 		
-		var low = floor(minData[currAttr]);
-		var high = ceil(maxData[currAttr]);	
-		
-		for (var i = low; i <= high; i += axisIntervals[currAttr]) {
-			var x = map(i, low, high, plotX1 + currAttr * gridWidth, plotX1 + (currAttr + 1) * gridWidth);
+		var low = floor(minData[useAttr[count]]) - axisIntervals[useAttr[count]];
+		var high = ceil(maxData[useAttr[count]]) + axisIntervals[useAttr[count]];	
+		var reversedCount = useAttr.length - count - 1;
+	
+		//x-axis labels
+		for (var i = low + axisIntervals[useAttr[count]]; i < high; i += axisIntervals[useAttr[count]]) {
 			
-			if (currAttr % 2 == 0) {
-				var y = plotY2;
-				textAlign(CENTER, TOP);
-				text(i, x, plotY2 + tickLabelDist);
-			} else {
-				var y = plotY1 - tickLen;
-				textAlign(CENTER, BOTTOM);
-				text(i, x, plotY1 - tickLabelDist);
+			var label = i;
+			if (label < 10) {
+				label = label.toFixed(1);
 			}
 			
+			//x-axis labels
+			var x = map(i, low, high, plotX1 + reversedCount * gridWidth, plotX1 + (reversedCount + 1) * gridWidth);
+			var y = plotY1 - tickLen;
+			textAlign(CENTER, BOTTOM);
+			text(label, x, plotY1 - tickLabelDist);
 			stroke(0,0,0);
 			line(x, y, x, y + tickLen);
 			noStroke();
 
-		}
-	
-		for (var i = low; i <= high; i += axisIntervals[currAttr]) {
-			var y = map(i, low, high, plotY1 + (currAttr + 1) * gridWidth, plotY1 + currAttr * gridWidth);
-			
-			if (currAttr % 2 == 0) {
-				var x = plotX2;
-				textAlign(LEFT, CENTER);
-				text(i, plotX2 + tickLabelDist, y);
-			} else {
-				var x = plotX1 - tickLen;
-				textAlign(RIGHT, CENTER);
-				text(i, plotX1 - tickLabelDist, y);
-			}
+			//y-axis labels
+			y = map(i, low, high, plotY1 + (count + 1) * gridWidth, plotY1 + count * gridWidth);
+			x = plotX1 - tickLen;
+			textAlign(RIGHT, CENTER);
+			text(label, plotX1 - tickLabelDist, y);
 			stroke(0,0,0);
 			line(x, y, x + tickLen, y);
 			noStroke();
 
 		}
-	
 		
 	}
 	
 }
 
 function plotData(encoding) {
-	
 	fill(0);
-	
 	for (var data = 0; data < rowCount; data++) {
-		// if (data % 100 != 0) {
-// 			continue;
-// 		}
-		var attrY = 1;
 		for (var row = 0; row < gridY.length; row++) {
-			if (attrY === category.index) {
-				attrY++;
-			}
-			var y = map(source.getNum(data, attrY), floor(minData[attrY] - axisIntervals[attrY]), ceil(maxData[attrY] + axisIntervals[attrY]), gridY[row] + gridWidth, gridY[row]);
-			var attrX = 10;			
+			var attrY = useAttr[row];
+			var y = map(source.getNum(data, attrY), floor(minData[attrY] - axisIntervals[attrY]), ceil(maxData[attrY] + axisIntervals[attrY]), gridY[row] + gridWidth, gridY[row]);		
 			for (var col = 0; col < (gridX.length - 1 - row); col++) {
-				if (attrX === category.index) {
-					attrX--;
-				}
+				var attrX = useAttr[useAttr.length - col - 1];
 				var x = map(source.getNum(data, attrX), floor(minData[attrX] - axisIntervals[attrX]), ceil(maxData[attrX] + axisIntervals[attrX]), gridX[col], gridX[col] + gridWidth);
-				
+			
 				if (encoding === "color") {
 					stroke(colorEncode.colors[source.getString(data, category.name)]);
 					strokeWeight(colorEncode.strokeWeight);
 					point(x,y);
 				}
-				
-				attrX--;
 			}	
-			attrY++;
-		}
-
+		}			
 	}
 }
