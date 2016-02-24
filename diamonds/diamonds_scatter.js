@@ -146,7 +146,6 @@ function drawAxisLabels() {
 		var high = ceil(maxData[useAttr[count]]) + axisIntervals[useAttr[count]];	
 		var reversedCount = useAttr.length - count - 1;
 	
-		//x-axis labels
 		for (var i = low + axisIntervals[useAttr[count]]; i < high; i += axisIntervals[useAttr[count]]) {
 			
 			var label = i;
@@ -155,22 +154,26 @@ function drawAxisLabels() {
 			}
 			
 			//x-axis labels
-			var x = map(i, low, high, plotX1 + reversedCount * gridWidth, plotX1 + (reversedCount + 1) * gridWidth);
-			var y = plotY1 - tickLen;
-			textAlign(CENTER, BOTTOM);
-			text(label, x, plotY1 - tickLabelDist);
-			stroke(0,0,0);
-			line(x, y, x, y + tickLen);
-			noStroke();
-
+			if (count !== 0) {
+				var x = map(i, low, high, plotX1 + reversedCount * gridWidth, plotX1 + (reversedCount + 1) * gridWidth);
+				var y = plotY1 - tickLen;
+				textAlign(CENTER, BOTTOM);
+				text(label, x, plotY1 - tickLabelDist);
+				stroke(0,0,0);
+				line(x, y, x, y + tickLen);
+				noStroke();
+			}
+			
 			//y-axis labels
-			y = map(i, low, high, plotY1 + (count + 1) * gridWidth, plotY1 + count * gridWidth);
-			x = plotX1 - tickLen;
-			textAlign(RIGHT, CENTER);
-			text(label, plotX1 - tickLabelDist, y);
-			stroke(0,0,0);
-			line(x, y, x + tickLen, y);
-			noStroke();
+			if (count !== useAttr.length - 1) {
+				y = map(i, low, high, plotY1 + (count + 1) * gridWidth, plotY1 + count * gridWidth);
+				x = plotX1 - tickLen;
+				textAlign(RIGHT, CENTER);
+				text(label, plotX1 - tickLabelDist, y);
+				stroke(0,0,0);
+				line(x, y, x + tickLen, y);
+				noStroke();
+			}
 
 		}
 		
