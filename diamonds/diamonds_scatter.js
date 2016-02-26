@@ -28,7 +28,11 @@ var colorEncode = {
 	strokeWeight: 2,
 	colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
 }
-var shapeEncode = {stroke: 51, strokeWeight: 0.8, size: 3};
+var shapeEncode = {
+	stroke: 51,
+	strokeWeight: 0.8,
+	size: 3
+};
 
 function preload() {
 	source = loadTable("data/diamonds100.csv", "csv", "header");
@@ -100,7 +104,7 @@ function draw() {
 	strokeWeight(1);
 	
 	drawAxisLabels();
-	plotData("color");
+	plotData("shape");
 	drawLegend("color");
 	
 }
@@ -218,6 +222,7 @@ function plotData(encoding) {
 	fill(0);
 	for (var data = 0; data < rowCount; data++) {
 		for (var row = 0; row < gridY.length; row++) {
+			var cat = source.getNum(data, category.name);
 			var attrY = useAttr[row];
 			var y = map(source.getNum(data, attrY), floor(minData[attrY] - axisIntervals[attrY]), ceil(maxData[attrY] + axisIntervals[attrY]), gridY[row] + gridWidth, gridY[row]);		
 			for (var col = 0; col < (gridX.length - 1 - row); col++) {
@@ -225,11 +230,54 @@ function plotData(encoding) {
 				var x = map(source.getNum(data, attrX), floor(minData[attrX] - axisIntervals[attrX]), ceil(maxData[attrX] + axisIntervals[attrX]), gridX[col], gridX[col] + gridWidth);
 			
 				if (encoding === "color") {
-					stroke(colorEncode.colors[source.getString(data, category.name)]);
+					stroke(colorEncode.colors[cat]);
 					strokeWeight(colorEncode.strokeWeight);
 					point(x,y);
+				} else if (encoding === "shape") {
+					stroke(shapeEncode.stroke);
+					strokeWeight(shapeEncode.strokeWeight);
+					noFill();
+					drawShapePoints(cat, x, y);
 				}
+				
 			}	
 		}			
 	}
+}
+
+function drawShapePoints(cat, x, y) {
+	var diameter = shapeEncode.size;
+	var radius = diameter/2;
+	switch(cat) {
+	case 0:
+		ellipse(x, y, diameter, diameter);
+		break;
+	case 1:
+		triangle(x, y - radius, x - diameter/1.73, y + radius, x + diameter/1.73, y + radius);
+		break;
+	case 2:
+		rectMode(CENTER);
+		rect(x, y, diameter, diameter);
+		break;
+	case 3:
+		quad(x, y - radius, x + radius, y, x, y + radius, x - radius, y);
+		break;
+	case 4:
+		star(x, y, radius/3, radius, 5);
+	}
+}
+
+function star(x, y, radius1, radius2, npoints) {
+  var angle = TWO_PI / npoints;
+  var halfAngle = angle/2.0;
+  beginShape();
+  for (var a = 0; a < TWO_PI; a += angle) {
+    var sx = x + cos(a) * radius2;
+    var sy = y + sin(a) * radius2;
+    vertex(sx, sy);
+    sx = x + cos(a+halfAngle) * radius1;
+    sy = y + sin(a+halfAngle) * radius1;
+    vertex(sx, sy);
+  }
+  endShape(CLOSE);
 }
