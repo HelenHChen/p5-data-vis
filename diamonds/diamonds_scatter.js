@@ -23,19 +23,20 @@ var gridX, gridY;
 var axisIntervalFreq = 4;
 var axisIntervals = [0, 0.5, 1, 1, 1, 5, 10, 2000, 2, 10, 5];
 
+// pointColors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+var pointColors = ["rgba(27, 158, 119, 0.5)", "rgba(217, 95, 2, 0.5)", "rgba(117, 112, 179, 0.5)", "rgba(231, 41, 138, 0.5)", "rgba(102, 166, 30, 0.5)"];
+
 // plot points attributes
-var colorEncode = {
-	strokeWeight: 2,
-	colors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+var pointEncode = {
+	strokeWeight: 2
 }
 var shapeEncode = {
-	stroke: 51,
 	strokeWeight: 0.8,
 	size: 3
 };
 
 function preload() {
-	source = loadTable("data/diamonds100.csv", "csv", "header");
+	source = loadTable("data/diamonds500.csv", "csv", "header");
 }
 
 function setup() {
@@ -94,6 +95,8 @@ function setup() {
 	xLegend = plotX2 - gridWidth * 2;
 	yLegend = plotY2 - gridWidth * 2;
 	
+	noLoop();
+	
 }
 
 function draw() {
@@ -105,7 +108,7 @@ function draw() {
 	
 	drawAxisLabels();
 	plotData("shape");
-	drawLegend("color");
+	drawLegend();
 	
 }
 
@@ -186,7 +189,7 @@ function drawAxisLabels() {
 	
 }
 
-function drawLegend(encoding) {
+function drawLegend() {
 	
 	var padding = 10;
 	var yBands = (gridWidth * 2 - padding * 2)/(classes.length + 1);
@@ -209,7 +212,7 @@ function drawLegend(encoding) {
 	//legend key
 	textSize(14);
 	for (var i = 0; i < classes.length; i++) {
-		fill(colorEncode.colors[i]);
+		fill(pointColors[i]);
 		textAlign(LEFT, CENTER);
 		text(classes[i], xLegend + 5 * padding + keySize, yLegend + padding + yBands * (i + 1) + yBands/2);
 		rectMode(CENTER);
@@ -228,16 +231,16 @@ function plotData(encoding) {
 			for (var col = 0; col < (gridX.length - 1 - row); col++) {
 				var attrX = useAttr[useAttr.length - col - 1];
 				var x = map(source.getNum(data, attrX), floor(minData[attrX] - axisIntervals[attrX]), ceil(maxData[attrX] + axisIntervals[attrX]), gridX[col], gridX[col] + gridWidth);
+				//blendMode(ADD);
+				stroke(pointColors[cat]);
 			
-				if (encoding === "color") {
-					stroke(colorEncode.colors[cat]);
-					strokeWeight(colorEncode.strokeWeight);
+				if (encoding === "point") {
+					strokeWeight(pointEncode.strokeWeight);
 					point(x,y);
 				} else if (encoding === "shape") {
-					stroke(shapeEncode.stroke);
 					strokeWeight(shapeEncode.strokeWeight);
 					noFill();
-					drawShapePoints(cat, x, y);
+					ellipse(x, y, shapeEncode.size, shapeEncode.size);
 				}
 				
 			}	
