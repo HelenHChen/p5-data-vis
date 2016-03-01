@@ -240,7 +240,9 @@ function plotData(encoding) {
 				} else if (encoding === "shape") {
 					strokeWeight(shapeEncode.strokeWeight);
 					noFill();
+					//Either circles or '+' marks: comment out unused one
 					ellipse(x, y, shapeEncode.size, shapeEncode.size);
+					//plusMark(x, y, shapeEncode.size);
 				}
 				
 			}	
@@ -283,4 +285,9 @@ function star(x, y, radius1, radius2, npoints) {
     vertex(sx, sy);
   }
   endShape(CLOSE);
+}
+
+function plusMark(x, y, radius) {
+	line(x, y - radius/2, x, y + radius/2);
+	line(x - radius/2, y, x + radius/2, y);
 }
