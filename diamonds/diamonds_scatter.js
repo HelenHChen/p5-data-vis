@@ -63,11 +63,11 @@ function setup() {
 		// update min and max based on dataset
 		for (var c = 1; c < attr.length; c++) {
 			var data = source.getNum(i, c);
-			if (data < minData[c]) {
-				minData[c] = data;
+			if (axisMin(data) < minData[c]) {
+				minData[c] = axisMin(data);
 			}
-			if (data > maxData[c]) {
-				maxData[c] = data;
+			if (axisMax(data) > maxData[c]) {
+				maxData[c] = axisMax(data);
 			}
 		}
 		
@@ -110,7 +110,7 @@ function setup() {
 	yLegend = plotY2 - gridWidth * 2;
 	
 	//call noLoop unless doing animation
-	//noLoop();
+	noLoop();
 	
 }
 
@@ -165,8 +165,8 @@ function drawAxisLabels() {
 	
 	for (var count = 0; count < useAttr.length; count++) {
 		
-		var low = floor(minData[useAttr[count]]) - axisIntervals[useAttr[count]];
-		var high = ceil(maxData[useAttr[count]]) + axisIntervals[useAttr[count]];	
+		var low = minData[useAttr[count]] - axisIntervals[useAttr[count]];
+		var high = maxData[useAttr[count]] + axisIntervals[useAttr[count]];	
 		var reversedCount = useAttr.length - count - 1;
 	
 		for (var i = low + axisIntervals[useAttr[count]]; i < high; i += axisIntervals[useAttr[count]]) {
@@ -254,10 +254,10 @@ function plotData(encoding, animate) {
 		for (var row = 0; row < gridY.length; row++) {
 			var cat = source.getNum(adjusted, category.name);
 			var attrY = useAttr[row];
-			var y = map(source.getNum(adjusted, attrY), floor(minData[attrY] - axisIntervals[attrY]), ceil(maxData[attrY] + axisIntervals[attrY]), gridY[row] + gridWidth, gridY[row]);		
+			var y = map(source.getNum(adjusted, attrY), minData[attrY] - axisIntervals[attrY], maxData[attrY] + axisIntervals[attrY], gridY[row] + gridWidth, gridY[row]);					
 			for (var col = 0; col < (gridX.length - 1 - row); col++) {
 				var attrX = useAttr[useAttr.length - col - 1];
-				var x = map(source.getNum(adjusted, attrX), floor(minData[attrX] - axisIntervals[attrX]), ceil(maxData[attrX] + axisIntervals[attrX]), gridX[col], gridX[col] + gridWidth);
+				var x = map(source.getNum(adjusted, attrX), minData[attrX] - axisIntervals[attrX], maxData[attrX] + axisIntervals[attrX], gridX[col], gridX[col] + gridWidth);
 				//blendMode(ADD);
 				stroke(pointColors[cat]);
 			
@@ -331,4 +331,19 @@ function shuffleIndex(indexArray) {
 		indexArray[i] = indexArray[j];
 		indexArray[j] = temp;
 	}
+}
+
+function axisMin(origMin) {
+	if (origMin > 10) {
+		origMin -= origMin % 10
+	}
+	return floor(origMin);
+}
+
+function axisMax(origMax) {
+	if (origMax > 10) {
+		origMax -= origMax % 10;
+		origMax += 10;
+	}
+	return ceil(origMax);
 }
