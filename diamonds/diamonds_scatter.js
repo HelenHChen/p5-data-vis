@@ -73,17 +73,24 @@ function setup() {
 		
 	}
 	
+	minData[10] = 5;
+	console.log(minData);
+	console.log(maxData);
+	
 	//shuffle randomized index
 	shuffleIndex(animateIndex);
 	
 	//update axisIntervals based on min and max
 	for (var i = 1; i < axisIntervals.length; i++) {
-		var interval = (ceil(maxData[i]) - floor(minData[i]))/axisIntervalFreq;
-		if (maxData[i] > 10) {
-			interval = Math.round(interval);
+		var interval = (maxData[i] - minData[i])/axisIntervalFreq;
+		if (maxData[i] > 10 && interval % 5 > 1) {
+			//interval = Math.round(interval);
+			interval = floor(interval - interval % 5 + 5)
 		}
 		axisIntervals[i] = interval;
 	}
+	
+	console.log(axisIntervals);
 	
     plotX1 = majorPad;
     plotX2 = width - majorPad;
@@ -122,7 +129,7 @@ function draw() {
 	strokeWeight(1);
 	
 	drawAxisLabels();
-	plotData("shape", true);
+	plotData("shape", false);
 	drawLegend();
 	
 }
@@ -335,15 +342,14 @@ function shuffleIndex(indexArray) {
 
 function axisMin(origMin) {
 	if (origMin > 10) {
-		origMin -= origMin % 10
+		origMin -= origMin % 5
 	}
 	return floor(origMin);
 }
 
 function axisMax(origMax) {
 	if (origMax > 10) {
-		origMax -= origMax % 10;
-		origMax += 10;
+		origMax = floor(origMax - origMax % 5 + 5);
 	}
-	return ceil(origMax);
+	return origMax;
 }
