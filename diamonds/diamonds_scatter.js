@@ -11,12 +11,11 @@ var maxData = [0, 0, 0, 0, 0, 43, 43, 326, 0, 0, 0];
 var minData = [0, 5, 4, 6, 7, 79, 95, 18823, 11, 59, 32];
 var rowCount;
 
-// create randomized array of index for animation
+// set up animation variables
 var animateIndex = [];
-// number of points to draw at a time when animating
-var animateNum = 200;
-// index to start animating at
+var animateNum = 200;		// number of points to draw at a time when animating
 var animateStart = 0;
+var isAnimate = true;
 
 // formatting plot area
 var majorPad = 50;
@@ -73,6 +72,7 @@ function setup() {
 		
 	}
 	
+	//TODO hard-coding "z" min
 	minData[10] = 5;
 	console.log(minData);
 	console.log(maxData);
@@ -117,7 +117,9 @@ function setup() {
 	yLegend = plotY2 - gridWidth * 2;
 	
 	//call noLoop unless doing animation
-	noLoop();
+	if (!isAnimate) {
+		noLoop();		
+	}
 	
 }
 
@@ -129,7 +131,7 @@ function draw() {
 	strokeWeight(1);
 	
 	drawAxisLabels();
-	plotData("shape", false);
+	plotData("shape", isAnimate);
 	drawLegend();
 	
 }
