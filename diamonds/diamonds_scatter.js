@@ -11,6 +11,12 @@ var maxData = [0, 0, 0, 0, 0, 43, 43, 326, 0, 0, 0];
 var minData = [0, 5, 4, 6, 7, 79, 95, 18823, 11, 59, 32];
 var rowCount;
 
+// create randomized array of index for animation
+var animateIndex = [];
+// number of points to draw at a time when animating
+var animateNum = 200;
+// index to start animating at
+var animateStart = 0;
 
 // formatting plot area
 var majorPad = 50;
@@ -46,10 +52,15 @@ function setup() {
 	
 	//get min and max
 	for (var i = 0; i < rowCount; i++) {
+		
+		//fill in randomize index
+		animateIndex.push(i);
+		
 		source.setNum(i, "cut", cut[source.getString(i,"cut")]);
 		source.setNum(i, "color", colors[source.getString(i,"color")]);
 		source.setNum(i, "clarity", clarity[source.getString(i,"clarity")]);
 		
+		// update min and max based on dataset
 		for (var c = 1; c < attr.length; c++) {
 			var data = source.getNum(i, c);
 			if (data < minData[c]) {
@@ -61,6 +72,9 @@ function setup() {
 		}
 		
 	}
+	
+	//shuffle randomized index
+	shuffleIndex(animateIndex);
 	
 	//update axisIntervals based on min and max
 	for (var i = 1; i < axisIntervals.length; i++) {
@@ -95,7 +109,8 @@ function setup() {
 	xLegend = plotX2 - gridWidth * 2;
 	yLegend = plotY2 - gridWidth * 2;
 	
-	noLoop();
+	//call noLoop unless doing animation
+	//noLoop();
 	
 }
 
@@ -107,7 +122,7 @@ function draw() {
 	strokeWeight(1);
 	
 	drawAxisLabels();
-	plotData("shape");
+	plotData("shape", true);
 	drawLegend();
 	
 }
@@ -221,16 +236,28 @@ function drawLegend() {
 	
 }
 
-function plotData(encoding) {
+function plotData(encoding, animate) {
 	fill(0);
-	for (var data = 0; data < rowCount; data++) {
+	var numData = 0;
+	var startIndex = 0;
+	
+	//determine number of rows to use based on whether we're animating
+	if (animate) {
+		numData = animateNum;
+		startIndex = animateStart;
+	} else {
+		numData = rowCount;
+	}
+
+	for (var data = startIndex; data < (startIndex + numData); data++) {
+		var adjusted = data % rowCount;
 		for (var row = 0; row < gridY.length; row++) {
-			var cat = source.getNum(data, category.name);
+			var cat = source.getNum(adjusted, category.name);
 			var attrY = useAttr[row];
-			var y = map(source.getNum(data, attrY), floor(minData[attrY] - axisIntervals[attrY]), ceil(maxData[attrY] + axisIntervals[attrY]), gridY[row] + gridWidth, gridY[row]);		
+			var y = map(source.getNum(adjusted, attrY), floor(minData[attrY] - axisIntervals[attrY]), ceil(maxData[attrY] + axisIntervals[attrY]), gridY[row] + gridWidth, gridY[row]);		
 			for (var col = 0; col < (gridX.length - 1 - row); col++) {
 				var attrX = useAttr[useAttr.length - col - 1];
-				var x = map(source.getNum(data, attrX), floor(minData[attrX] - axisIntervals[attrX]), ceil(maxData[attrX] + axisIntervals[attrX]), gridX[col], gridX[col] + gridWidth);
+				var x = map(source.getNum(adjusted, attrX), floor(minData[attrX] - axisIntervals[attrX]), ceil(maxData[attrX] + axisIntervals[attrX]), gridX[col], gridX[col] + gridWidth);
 				//blendMode(ADD);
 				stroke(pointColors[cat]);
 			
@@ -247,6 +274,11 @@ function plotData(encoding) {
 				
 			}	
 		}			
+	}
+	
+	if (animate) {
+		animateStart++;
+		animateStart = animateStart % rowCount;
 	}
 }
 
@@ -290,4 +322,13 @@ function star(x, y, radius1, radius2, npoints) {
 function plusMark(x, y, radius) {
 	line(x, y - radius/2, x, y + radius/2);
 	line(x - radius/2, y, x + radius/2, y);
+}
+
+function shuffleIndex(indexArray) {
+	for (var i = indexArray.length - 1; i >= 0; i--) {
+		var j = Math.floor(Math.random() * i);
+		var temp = indexArray[i];
+		indexArray[i] = indexArray[j];
+		indexArray[j] = temp;
+	}
 }
