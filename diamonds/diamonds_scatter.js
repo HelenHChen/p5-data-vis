@@ -29,15 +29,15 @@ var axisIntervalFreq = 4;
 var axisIntervals = [0, 0.5, 1, 1, 1, 5, 10, 2000, 2, 10, 5];
 
 // pointColors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
-var pointColors = ["rgba(27, 158, 119, 0.5)", "rgba(217, 95, 2, 0.5)", "rgba(117, 112, 179, 0.5)", "rgba(231, 41, 138, 0.5)", "rgba(102, 166, 30, 0.5)"];
+var pointColors = ["rgba(27, 158, 119, 1)", "rgba(217, 95, 2, 1)", "rgba(117, 112, 179, 1)", "rgba(231, 41, 138, 1)", "rgba(102, 166, 30, 1)"];
 
 // plot points attributes
 var pointEncode = {
 	strokeWeight: 2
 }
 var shapeEncode = {
-	strokeWeight: 0.8,
-	size: 3
+	strokeWeight: 0.3,
+	size: 4.5
 };
 
 function preload() {
@@ -119,19 +119,21 @@ function setup() {
 	//call noLoop unless doing animation
 	if (!isAnimate) {
 		noLoop();		
+	} else {
+		frameRate(3);
 	}
 	
 }
 
 function draw() {
-	background(255);	
+	//background(255);	
 	drawGrid();
 	drawChartText();
 	
 	strokeWeight(1);
 	
 	drawAxisLabels();
-	plotData("shape", isAnimate);
+	plotData("point", isAnimate);
 	drawLegend();
 	
 }
@@ -267,12 +269,16 @@ function plotData(encoding, animate) {
 			for (var col = 0; col < (gridX.length - 1 - row); col++) {
 				var attrX = useAttr[useAttr.length - col - 1];
 				var x = map(source.getNum(adjusted, attrX), minData[attrX] - axisIntervals[attrX], maxData[attrX] + axisIntervals[attrX], gridX[col], gridX[col] + gridWidth);
-				//blendMode(ADD);
+				blendMode(REPLACE);
 				stroke(pointColors[cat]);
 			
 				if (encoding === "point") {
-					strokeWeight(pointEncode.strokeWeight);
-					point(x,y);
+					//strokeWeight(pointEncode.strokeWeight);
+					//point(x,y);
+					strokeWeight(shapeEncode.strokeWeight);
+					stroke(255);
+					fill(pointColors[cat]);
+					ellipse(x, y, shapeEncode.size, shapeEncode.size);
 				} else if (encoding === "shape") {
 					strokeWeight(shapeEncode.strokeWeight);
 					noFill();
