@@ -29,7 +29,8 @@ var axisIntervalFreq = 4;
 var axisIntervals = [0, 0.5, 1, 1, 1, 5, 10, 2000, 2, 10, 5];
 
 // pointColors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
-var pointColors = ["rgba(27, 158, 119, 1)", "rgba(217, 95, 2, 1)", "rgba(117, 112, 179, 1)", "rgba(231, 41, 138, 1)", "rgba(102, 166, 30, 1)"];
+// pointColors = ["rgba(27, 158, 119, 1)", "rgba(217, 95, 2, 1)", "rgba(117, 112, 179, 1)", "rgba(231, 41, 138, 1)", "rgba(102, 166, 30, 1)"];
+var pointColors = ["rgba(76, 114, 176, 1)", "rgba(85, 168, 104, 1)", "rgba(196, 78, 82, 1)", "rgba(129, 114, 178, 1)", "rgba(204, 185, 116, 1)"];
 
 // plot points attributes
 var pointEncode = {
@@ -120,16 +121,17 @@ function setup() {
 	if (!isAnimate) {
 		noLoop();		
 	} else {
-		frameRate(3);
+		frameRate(30);
 	}
+	
+	drawGrid();
+	drawChartText();
 	
 }
 
 function draw() {
 	//background(255);	
-	drawGrid();
-	drawChartText();
-	
+
 	strokeWeight(1);
 	
 	drawAxisLabels();
