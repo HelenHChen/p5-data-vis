@@ -239,13 +239,19 @@ function drawAxisLabels() {
 			if (label < 10) {
 				label = label.toFixed(1);
 			}
+			var labelText = label;
 			
 			//x-axis labels
 			if (count !== 0) {
 				var x = map(label, labels[0], labels[2], plotX1 + reversedCount * gridWidth + labelPad, plotX1 + (reversedCount + 1) * gridWidth - labelPad);
 				var y = plotY1 - tickLen;
 				textAlign(CENTER, BOTTOM);
-				text(label, x, plotY1 - tickLabelDist);
+				// change values >= 1000 to K
+				if (label >= 1000) {
+					labelText = (label/1000).toFixed(1);
+					labelText = labelText + "K";
+				}
+				text(labelText, x, plotY1 - tickLabelDist);
 				stroke(0,0,0);
 				line(x, y, x, y + tickLen);
 				noStroke();
@@ -256,7 +262,7 @@ function drawAxisLabels() {
 				y = map(label, labels[0], labels[2], plotY1 + (count + 1) * gridWidth - labelPad, plotY1 + count * gridWidth + labelPad);
 				x = plotX1 - tickLen;
 				textAlign(RIGHT, CENTER);
-				text(label, plotX1 - tickLabelDist, y);
+				text(labelText, plotX1 - tickLabelDist, y);
 				stroke(0,0,0);
 				line(x, y, x + tickLen, y);
 				noStroke();
