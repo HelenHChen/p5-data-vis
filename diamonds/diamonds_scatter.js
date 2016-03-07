@@ -9,24 +9,25 @@ var clarity = {I1: 0, SI1: 1, SI2: 2, VS1: 3, VS2: 4, VVS1: 5, VVS2: 6, IF: 7};
 
 var maxData = [0, 0, 0, 0, 0, 43, 43, 326, 0, 0, 0];
 var minData = [0, 5, 4, 6, 7, 79, 95, 18823, 11, 59, 32];
+var midData = [0, 0, 0, 0, 0, 43, 43, 326, 0, 0, 0];
 var rowCount;
 
 // set up animation variables
 var animateIndex = [];
 var animateNum = 200;		// number of points to draw at a time when animating
 var animateStart = 0;
-var isAnimate = true;
+var isAnimate = false;
 
 // formatting plot area
 var majorPad = 50;
 var gridWidth;
-var tickLen = 5;
+var tickLen = 3;
 var tickLabelDist = tickLen * 1.5;
-var labelPad = 1;
+var labelPad;
 var plotX1, plotY1, plotX2, plotY2, xTitle, yTitle, xAxisLabelX, xAxisLabelY, yAxisLabelX, yAxisLabelY, xLegend, yLegend;
 var gridX, gridY;
-var axisIntervalFreq = 4;
-var axisIntervals = [0, 0.5, 1, 1, 1, 5, 10, 2000, 2, 10, 5];
+// var axisIntervalFreq = 4;
+// var axisIntervals = [0, 0.5, 1, 1, 1, 5, 10, 2000, 2, 10, 5];
 
 // pointColors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
 // pointColors = ["rgba(27, 158, 119, 1)", "rgba(217, 95, 2, 1)", "rgba(117, 112, 179, 1)", "rgba(231, 41, 138, 1)", "rgba(102, 166, 30, 1)"];
@@ -73,32 +74,31 @@ function setup() {
 		
 	}
 	
-	//TODO hard-coding "z" min
-	minData[10] = 5;
-	console.log(minData);
-	console.log(maxData);
+	// update mid based on new min and max
+	for (var i = 1; i < attr.length; i++) {
+		midData[i] = (maxData[i] + minData[i])/2;
+	}
 	
 	//shuffle randomized index
 	shuffleIndex(animateIndex);
 	
 	//update axisIntervals based on min and max
-	for (var i = 1; i < axisIntervals.length; i++) {
-		var interval = (maxData[i] - minData[i])/axisIntervalFreq;
-		if (maxData[i] > 10 && interval % 5 > 1) {
-			//interval = Math.round(interval);
-			interval = floor(interval - interval % 5 + 5)
-		}
-		axisIntervals[i] = interval;
-	}
-	
-	console.log(axisIntervals);
+	// for (var i = 1; i < axisIntervals.length; i++) {
+// 		var interval = (maxData[i] - minData[i])/axisIntervalFreq;
+// 		if (maxData[i] > 10 && interval % 5 > 1) {
+// 			//interval = Math.round(interval);
+// 			interval = floor(interval - interval % 5 + 5)
+// 		}
+// 		axisIntervals[i] = interval;
+// 	}
 	
     plotX1 = majorPad;
     plotX2 = width - majorPad;
     plotY1 = height - (width - 2 * majorPad) - majorPad;
     plotY2 = height - majorPad;
 
-	gridWidth = (width - 2 * majorPad)/(useAttr.length);		
+	gridWidth = (width - 2 * majorPad)/(useAttr.length);
+	labelPad = gridWidth * 0.1;	
 	gridX = [];
 	gridY = [];
 	for (var i = 0; i < useAttr.length; i++) {
@@ -143,7 +143,7 @@ function draw() {
 function drawGrid() {
     rectMode(CORNER);
     noFill();
-	strokeWeight(1);
+	strokeWeight(.5);
 	stroke(169, 169, 169);
 	
 	for (var i = 0; i < gridY.length; i++) {
@@ -163,6 +163,7 @@ function drawChartText() {
 	text("Diamonds Scatterplot Matrix", xTitle, yTitle);
 	
 	// draw attribute text
+	fill(169, 169, 169);
 	textSize(14);
 	textAlign(CENTER, CENTER);
 	for (var i = 0; i < useAttr.length; i++) {
@@ -171,27 +172,77 @@ function drawChartText() {
 	
 }
 
+// function drawAxisLabels() {
+// 	fill(169, 169, 169);
+// 	stroke(169, 169, 169);
+// 	textSize(8);
+// 	strokeWeight(0.25);
+//
+// 	for (var count = 0; count < useAttr.length; count++) {
+//
+// 		var low = minData[useAttr[count]] - axisIntervals[useAttr[count]];
+// 		var high = maxData[useAttr[count]] + axisIntervals[useAttr[count]];
+// 		var reversedCount = useAttr.length - count - 1;
+//
+// 		for (var i = low + axisIntervals[useAttr[count]]; i < high; i += axisIntervals[useAttr[count]]) {
+//
+// 			var label = i;
+// 			if (label < 10) {
+// 				label = label.toFixed(1);
+// 			}
+//
+// 			//x-axis labels
+// 			if (count !== 0) {
+// 				var x = map(i, low, high, plotX1 + reversedCount * gridWidth, plotX1 + (reversedCount + 1) * gridWidth);
+// 				var y = plotY1 - tickLen;
+// 				textAlign(CENTER, BOTTOM);
+// 				text(label, x, plotY1 - tickLabelDist);
+// 				stroke(0,0,0);
+// 				line(x, y, x, y + tickLen);
+// 				noStroke();
+// 			}
+//
+// 			//y-axis labels
+// 			if (count !== useAttr.length - 1) {
+// 				y = map(i, low, high, plotY1 + (count + 1) * gridWidth, plotY1 + count * gridWidth);
+// 				x = plotX1 - tickLen;
+// 				textAlign(RIGHT, CENTER);
+// 				text(label, plotX1 - tickLabelDist, y);
+// 				stroke(0,0,0);
+// 				line(x, y, x + tickLen, y);
+// 				noStroke();
+// 			}
+//
+// 		}
+//
+// 	}
+//
+// }
+
 function drawAxisLabels() {
-	fill(0);
-	textSize(10);
-	strokeWeight(1);
+	fill(169, 169, 169);
+	stroke(169, 169, 169);
+	textSize(8);
+	strokeWeight(0.25);
 	
 	for (var count = 0; count < useAttr.length; count++) {
 		
-		var low = minData[useAttr[count]] - axisIntervals[useAttr[count]];
-		var high = maxData[useAttr[count]] + axisIntervals[useAttr[count]];	
 		var reversedCount = useAttr.length - count - 1;
+		var labels = [];
+		labels.push(minData[useAttr[count]]);
+		labels.push(midData[useAttr[count]]);
+		labels.push(maxData[useAttr[count]]);
 	
-		for (var i = low + axisIntervals[useAttr[count]]; i < high; i += axisIntervals[useAttr[count]]) {
+		for (var i = 0; i < labels.length; i++) {
 			
-			var label = i;
+			var label = labels[i];
 			if (label < 10) {
 				label = label.toFixed(1);
 			}
 			
 			//x-axis labels
 			if (count !== 0) {
-				var x = map(i, low, high, plotX1 + reversedCount * gridWidth, plotX1 + (reversedCount + 1) * gridWidth);
+				var x = map(label, labels[0], labels[2], plotX1 + reversedCount * gridWidth + labelPad, plotX1 + (reversedCount + 1) * gridWidth - labelPad);
 				var y = plotY1 - tickLen;
 				textAlign(CENTER, BOTTOM);
 				text(label, x, plotY1 - tickLabelDist);
@@ -202,7 +253,7 @@ function drawAxisLabels() {
 			
 			//y-axis labels
 			if (count !== useAttr.length - 1) {
-				y = map(i, low, high, plotY1 + (count + 1) * gridWidth, plotY1 + count * gridWidth);
+				y = map(label, labels[0], labels[2], plotY1 + (count + 1) * gridWidth - labelPad, plotY1 + count * gridWidth + labelPad);
 				x = plotX1 - tickLen;
 				textAlign(RIGHT, CENTER);
 				text(label, plotX1 - tickLabelDist, y);
@@ -267,10 +318,10 @@ function plotData(encoding, animate) {
 		for (var row = 0; row < gridY.length; row++) {
 			var cat = source.getNum(adjusted, category.name);
 			var attrY = useAttr[row];
-			var y = map(source.getNum(adjusted, attrY), minData[attrY] - axisIntervals[attrY], maxData[attrY] + axisIntervals[attrY], gridY[row] + gridWidth, gridY[row]);					
+			var y = map(source.getNum(adjusted, attrY), minData[attrY], maxData[attrY], gridY[row] + gridWidth - labelPad, gridY[row] + labelPad);					
 			for (var col = 0; col < (gridX.length - 1 - row); col++) {
 				var attrX = useAttr[useAttr.length - col - 1];
-				var x = map(source.getNum(adjusted, attrX), minData[attrX] - axisIntervals[attrX], maxData[attrX] + axisIntervals[attrX], gridX[col], gridX[col] + gridWidth);
+				var x = map(source.getNum(adjusted, attrX), minData[attrX], maxData[attrX], gridX[col] + labelPad, gridX[col] + gridWidth - labelPad);
 				blendMode(REPLACE);
 				stroke(pointColors[cat]);
 			
