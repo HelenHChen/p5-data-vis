@@ -14,9 +14,9 @@ var rowCount;
 
 // set up animation variables
 var animateIndex = [];
-var animateNum = 200;		// number of points to draw at a time when animating
+var animateNum = 1;		// number of points to draw at a time when animating
 var animateStart = 0;
-var isAnimate = false;
+var isAnimate = true;
 
 // formatting plot area
 var majorPad = 50;
@@ -43,7 +43,7 @@ var shapeEncode = {
 };
 
 function preload() {
-	source = loadTable("data/diamonds500.csv", "csv", "header");
+	source = loadTable("data/diamonds1000.csv", "csv", "header");
 }
 
 function setup() {
@@ -121,7 +121,8 @@ function setup() {
 	if (!isAnimate) {
 		noLoop();		
 	} else {
-		frameRate(30);
+		frameRate(60);
+		plotData("point", false);
 	}
 	
 	drawGrid();
