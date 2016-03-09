@@ -16,7 +16,7 @@ var rowCount;
 var animateIndex = [];
 var animateNum = 1;		// number of points to draw at a time when animating
 var animateStart = 0;
-var isAnimate = true;
+var isAnimate = false;
 
 // formatting plot area
 var majorPad = 50;
@@ -43,12 +43,13 @@ var shapeEncode = {
 };
 
 function preload() {
-	source = loadTable("data/diamonds.csv", "csv", "header");
+	source = loadTable("data/diamonds10000.csv", "csv", "header");
 }
 
 function setup() {
 	
 	createCanvas(950, 1000);
+	//saveFrames("diamondsChart", "png", 1, 1);
 	rowCount = source.getRowCount();
 	
 	//get min and max
