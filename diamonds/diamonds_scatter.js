@@ -43,7 +43,7 @@ var shapeEncode = {
 };
 
 function preload() {
-	source = loadTable("data/diamonds1000.csv", "csv", "header");
+	source = loadTable("data/diamonds.csv", "csv", "header");
 }
 
 function setup() {
@@ -77,6 +77,9 @@ function setup() {
 	// update mid based on new min and max
 	for (var i = 1; i < attr.length; i++) {
 		midData[i] = (maxData[i] + minData[i])/2;
+		if (midData[i] >= 10) {
+			midData[i] = Math.round(midData[i]);
+		}
 	}
 	
 	//shuffle randomized index
@@ -132,6 +135,9 @@ function setup() {
 
 function draw() {
 	//background(255);	
+	if (isAnimate) {
+		console.log(frameRate());
+	}
 
 	strokeWeight(1);
 	
