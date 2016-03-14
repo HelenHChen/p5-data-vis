@@ -19,7 +19,7 @@ var animateStart = 0;
 var isAnimate = false;
 
 // formatting plot area
-var majorPad = 50;
+var majorPad = 55;
 var gridWidth;
 var tickLen = 3;
 var tickLabelDist = tickLen * 1.5;
@@ -43,13 +43,13 @@ var shapeEncode = {
 };
 
 function preload() {
-	source = loadTable("data/diamonds10000.csv", "csv", "header");
+	source = loadTable("data/diamonds1000.csv", "csv", "header");
 }
 
 function setup() {
 	
-	createCanvas(950, 1000);
-	//saveFrames("diamondsChart", "png", 1, 1);
+	createCanvas(855, 900);
+	//saveFrames("diamonds1000Chart", "png", 10, 5);
 	rowCount = source.getRowCount();
 	
 	//get min and max
@@ -101,11 +101,11 @@ function setup() {
     plotY1 = height - (width - 2 * majorPad) - majorPad;
     plotY2 = height - majorPad;
 
-	gridWidth = (width - 2 * majorPad)/(useAttr.length);
+	gridWidth = (width - 2 * majorPad)/(useAttr.length - 1);
 	labelPad = gridWidth * 0.1;	
 	gridX = [];
 	gridY = [];
-	for (var i = 0; i < useAttr.length; i++) {
+	for (var i = 0; i < useAttr.length - 1; i++) {
 		gridX.push(plotX1 + i * gridWidth);
 		gridY.push(plotY1 + i * gridWidth);
 	}
@@ -170,13 +170,14 @@ function drawChartText() {
 	noStroke();
 	text("Diamonds Scatterplot Matrix", xTitle, yTitle);
 	
+	// code for drawing text inside grid
 	// draw attribute text
-	fill(169, 169, 169);
-	textSize(14);
-	textAlign(CENTER, CENTER);
-	for (var i = 0; i < useAttr.length; i++) {
-		text(attr[useAttr[i]], gridX[gridX.length - 1 - i] + gridWidth/2, gridY[i] + gridWidth/2);			
-	}
+//	fill(169, 169, 169);
+// 	textSize(12);
+// 	textAlign(CENTER, CENTER);
+	// for (var i = 0; i < useAttr.length; i++) {
+// 		text(attr[useAttr[i]], gridX[gridX.length - 1 - i] + gridWidth/2, gridY[i] + gridWidth/2);
+// 	}
 	
 }
 
@@ -275,6 +276,9 @@ function drawAxisLabels() {
 				line(x, y, x + tickLen, y);
 				noStroke();
 			}
+			
+			//axis subtitles
+			
 
 		}
 		
@@ -333,7 +337,7 @@ function plotData(encoding, animate) {
 			var cat = source.getNum(adjusted, category.name);
 			var attrY = useAttr[row];
 			var y = map(source.getNum(adjusted, attrY), minData[attrY], maxData[attrY], gridY[row] + gridWidth - labelPad, gridY[row] + labelPad);					
-			for (var col = 0; col < (gridX.length - 1 - row); col++) {
+			for (var col = 0; col < (gridX.length - row); col++) {
 				var attrX = useAttr[useAttr.length - col - 1];
 				var x = map(source.getNum(adjusted, attrX), minData[attrX], maxData[attrX], gridX[col] + labelPad, gridX[col] + gridWidth - labelPad);
 				blendMode(REPLACE);
