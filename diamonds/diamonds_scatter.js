@@ -23,7 +23,7 @@ var majorPad = 55;
 var gridWidth;
 var tickLen = 3;
 var tickLabelDist = tickLen * 1.5;
-var subtitleDist = tickLen * 8;
+var subtitleDist = tickLen * 7;
 var labelPad;
 var plotX1, plotY1, plotX2, plotY2, xTitle, yTitle, xAxisLabelX, xAxisLabelY, yAxisLabelX, yAxisLabelY, xLegend, yLegend;
 var gridX, gridY;
@@ -119,8 +119,8 @@ function setup() {
     xAxisLabelY = height - 25;
 	yAxisLabelY = (plotY1 + plotY2)/2;
 	
-	xLegend = plotX2 - gridWidth * 2;
-	yLegend = plotY2 - gridWidth * 2;
+	xLegend = plotX2 - gridWidth;
+	yLegend = plotY1 + 3 * gridWidth;
 	
 	//call noLoop unless doing animation
 	if (!isAnimate) {
@@ -265,9 +265,11 @@ function drawAxisLabels() {
 				
 				// draw axis subtitle
 				if (i === 1) {
+					push();
 					textSize(10);
+					stroke(128, 128, 128);
 					text(attr[useAttr[count]], x, plotY1 - subtitleDist);
-					textSize(8);
+					pop();
 				}
 				
 				stroke(0,0,0);
@@ -284,13 +286,13 @@ function drawAxisLabels() {
 				
 				// draw axis subtitle
 				if (i === 1) {
-					textSize(10);
 					push();
+					textSize(10);
+					stroke(128, 128, 128);
 					rotate(-PI/2);
 					textAlign(CENTER, CENTER);
 					text(attr[useAttr[count]], -y, plotX1 - 1.5 * subtitleDist);
 					pop();
-					textSize(8);
 				}
 				
 				stroke(0,0,0);
@@ -306,23 +308,23 @@ function drawAxisLabels() {
 
 function drawLegend() {
 	
-	var padding = 10;
-	var yBands = (gridWidth * 2 - padding * 2)/(classes.length + 1);
+	var padding = 5;
+	var yBands = (gridWidth - padding * 2)/(classes.length + 1);
 	var keySize = yBands * 0.6;
 	
 	//draw rectangle around legend box
 	rectMode(CORNER);
 	noFill();
-	strokeWeight(1);
+	strokeWeight(.5);
 	stroke(169, 169, 169);
-	rect(xLegend, yLegend, gridWidth * 2, gridWidth * 2);
+	rect(xLegend, yLegend, gridWidth, gridWidth);
 	
 	//legend title
-	textSize(24);
+	textSize(16);
 	textAlign(CENTER, CENTER);
-	fill(0);
+	fill(128, 128, 128);
 	noStroke();
-	text(category.name, xLegend + gridWidth, yLegend + padding + yBands/2);
+	text(category.name, xLegend + gridWidth/2, yLegend + padding + yBands/2);
 	
 	//legend key
 	textSize(14);
