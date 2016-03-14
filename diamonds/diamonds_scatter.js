@@ -23,6 +23,7 @@ var majorPad = 55;
 var gridWidth;
 var tickLen = 3;
 var tickLabelDist = tickLen * 1.5;
+var subtitleDist = tickLen * 8;
 var labelPad;
 var plotX1, plotY1, plotX2, plotY2, xTitle, yTitle, xAxisLabelX, xAxisLabelY, yAxisLabelX, yAxisLabelY, xLegend, yLegend;
 var gridX, gridY;
@@ -261,6 +262,14 @@ function drawAxisLabels() {
 					labelText = labelText + "K";
 				}
 				text(labelText, x, plotY1 - tickLabelDist);
+				
+				// draw axis subtitle
+				if (i === 1) {
+					textSize(10);
+					text(attr[useAttr[count]], x, plotY1 - subtitleDist);
+					textSize(8);
+				}
+				
 				stroke(0,0,0);
 				line(x, y, x, y + tickLen);
 				noStroke();
@@ -272,13 +281,22 @@ function drawAxisLabels() {
 				x = plotX1 - tickLen;
 				textAlign(RIGHT, CENTER);
 				text(labelText, plotX1 - tickLabelDist, y);
+				
+				// draw axis subtitle
+				if (i === 1) {
+					textSize(10);
+					push();
+					rotate(-PI/2);
+					textAlign(CENTER, CENTER);
+					text(attr[useAttr[count]], -y, plotX1 - 1.5 * subtitleDist);
+					pop();
+					textSize(8);
+				}
+				
 				stroke(0,0,0);
 				line(x, y, x + tickLen, y);
 				noStroke();
-			}
-			
-			//axis subtitles
-			
+			}	
 
 		}
 		
