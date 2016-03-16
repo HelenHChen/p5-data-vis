@@ -5,11 +5,45 @@
   <!-- uncomment lines below to include extra p5 libraries -->
   <!--<script language="javascript" src="libraries/p5.dom.js"></script>-->
   <!--<script language="javascript" src="libraries/p5.sound.js"></script>-->
-  <script language="javascript" type="text/javascript" src="iris_scattermatrix.js"></script>
+  <script language="javascript" type="text/javascript" src="../diamonds/multi_scatter.js"></script>
   <!-- this line removes any default padding and style. you might only need one of these values set. -->
   <style> body {padding: 0; margin: 0;} </style>
 </head>
 
 <body>
 </body>
+<script language="javascript" type="text/javascript">
+	
+	var dataSource = "data/iris.csv";
+	var attr = {
+		all: ["sepal length","sepal width","petal length","petal width","class"],
+		use: [0, 1, 2, 3]
+	};
+	var category = {
+		name: "class",
+		index: 4,
+		values: ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
+	};
+	var animate = {
+		isAnimate: false,
+		animateNum: 1
+	};
+	var encoding = "color_point";
+	var chartTitle = "Iris Scatterplot Matrix";
+	
+	var chart = multi_scatter(dataSource, attr, category, animate, encoding,chartTitle);
+	
+	function preload() {
+		chart.preload();
+	}
+	
+	function setup() {
+		chart.setup();
+	}
+	
+	function draw() {
+		chart.draw();
+	}
+	
+</script>
 </html>
