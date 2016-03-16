@@ -41,8 +41,27 @@ var pointEncode = {
 }
 var shapeEncode = {
 	stroke: pointEncode.colors[0],
-	strokeWeight: 0.3,
-	size: 4.5
+	strokeWeight: 0.5,
+	size: 4.5,
+	shapes: [
+		function(x, y, r) {
+			ellipse(x, y, r, r);
+		},
+		function(x, y, r) {
+			line(x, y - r/2, x, y + r/2);
+			line(x - r/2, y, x + r/2, y);
+		},
+		function(x, y, r) {
+			rectMode(CENTER);
+			rect(x, y, r, r);
+		},
+		function(x, y, r) {
+			triangle(x, y - r, x - 2*r/1.73, y + r, x + 2*r/1.73, y + r);
+		},
+		function() {
+			quad(x, y - r, x + r, y, x, y + r, x - r, y);
+		}
+	]
 };
 
 function preload() {
@@ -134,7 +153,7 @@ function setup() {
 		noLoop();		
 	} else {
 		frameRate(60);
-		plotData("point", false);
+		plotData("color_point", false);
 	}
 	
 	drawGrid();
@@ -152,7 +171,7 @@ function draw() {
 	strokeWeight(1);
 	
 	drawAxisLabels();
-	plotData("point", isAnimate);
+	plotData("color_shape", isAnimate);
 	
 }
 
@@ -369,15 +388,15 @@ function plotData(encoding, animate) {
 				var x = map(source.getNum(adjusted, attrX), minData[attrX], maxData[attrX], gridX[col] + labelPad, gridX[col] + gridWidth - labelPad);
 				//blendMode(REPLACE);
 			
-				if (encoding === "point") {
+				if (encoding === "color_point") {
 					strokeWeight(pointEncode.strokeWeight);
 					//point(x,y);
 					//noStroke();				//TODO change if want white stroke around circle
 					stroke(255);
 					fill(pointEncode.colors[classes.indexOf(cat)]);
 					ellipse(x, y, pointEncode.size, pointEncode.size);
-				} else if (encoding === "shape") {			//TODO Need to fix shape encoding
-					stroke(shapeEncode.stroke);
+				} else if (encoding === "color_shape") {			//TODO Need to fix shape encoding
+					stroke(pointEncode.colors[classes.indexOf(cat)]);
 					strokeWeight(shapeEncode.strokeWeight);
 					noFill();
 					//Either circles or '+' marks: comment out unused one

@@ -1,28 +1,22 @@
-function multi_scatter(_attr, _category, _animate) {
+function multi_scatter(_dataSource, _attr, _category, _animate, _encoding, _chartTitle) {
 
 	var main = {};
 	
-	var source;
+	// Variables section
 	
-	// Indicates the attr in the dataset. _attr needs to be an object with three properties:
+	var source;
+	var dataSource = _dataSource;	//a string filepath of a .csv file
+	
+	// Indicates the attr in the dataset. _attr needs to be an object with two properties:
 	//	{all: an array of strings containing ALL of the column headings in the first row of the dataset, includes "" primary key field name,
-	//	 use: an array of ints containing the column INDICIES of the attr to be plotted in the matrix. Does NOT include the attr to be used for encoding,
-	//	 ordinal: indicates all the ordinal attr in the dataset and how their values should be translated to ints.
-	//	 Needs to bean array of objects with two properties:
-	//		{key: column heading name of ordinal attribute (a string),
-	//		 values: all possible values for this attribute and their corresponding int values. Needs to be an array of objects with two properties:
-	//			{key: name of a value of this attribute,
-	//		 	 value: corresponding int value of this attribute}
-	//		}
-	//	}
+	//	 use: an array of ints containing the column INDICIES of the attr to be plotted in the matrix. Does NOT include the attr to be used for encoding}
 	var attr = _attr.all;
 	var useAttr = _attr.use;
-	var ordinalAttr = _attr.ordinal;
 	
 	// Indicates which attr will be used for encoding. Needs to be an object with three properties: 
 	//	{name: string holding attr name,
 	//	index: column # of attr,
-	//	values: an array containing ALL possible values of this attr}
+	//	values: an array containing ALL possible values of this attr, string type}
 	var category = {};
 	category.name = _category.name;
 	category.index = _category.index;
@@ -53,130 +47,40 @@ function multi_scatter(_attr, _category, _animate) {
 	var plotX1, plotY1, plotX2, plotY2, xTitle, yTitle, xAxisLabelX, xAxisLabelY, yAxisLabelX, yAxisLabelY, xLegend, yLegend;
 	var gridX, gridY;
 
-//TODO
-	var pointColors = ["rgba(76, 114, 176, 1)", "rgba(85, 168, 104, 1)", "rgba(196, 78, 82, 1)", "rgba(129, 114, 178, 1)", "rgba(204, 185, 116, 1)"];
-
-	// plot points attributes
+	// Set up encoding. _encoding needs to be a string with one of these values:
+	// color_point, color_shape
 	var pointEncode = {
-		strokeWeight: 2
-	}
-	var shapeEncode = {
 		strokeWeight: 0.3,
-		size: 4.5
+		size: 4.5,
+		colors: ["rgba(76, 114, 176, 1)", "rgba(85, 168, 104, 1)", "rgba(196, 78, 82, 1)", "rgba(129, 114, 178, 1)", "rgba(204, 185, 116, 1)"]
 	};
-
-	function preload() {
-		source = loadTable("data/diamonds-jittered-all.csv", "csv", "header");
-	}
-
-	function setup() {
-	
-		createCanvas(855, 900);
-		background(255);
-		//saveFrames("diamonds1000Chart", "png", 10, 5);
-		//saveFrames("diamondsAllChart", "png", 1, 1);
-		rowCount = source.getRowCount();
-	
-		//get min and max
-		for (var i = 0; i < rowCount; i++) {
-		
-			source.setNum(i, "cut", cut[source.getString(i,"cut")]);
-			source.setNum(i, "color", colors[source.getString(i,"color")]);
-			source.setNum(i, "clarity", clarity[source.getString(i,"clarity")]);
-		
-			// update min and max based on dataset
-			for (var c = 1; c < attr.length; c++) {
-			
-				var data = source.getNum(i, c);
-			
-				if (i === 0) {
-					minData[c] = axisMin(data);
-					maxData[c] = axisMax(data);
-				} else {
-					if (axisMin(data) < minData[c]) {
-						minData[c] = axisMin(data);
-					}
-					if (axisMax(data) > maxData[c]) {
-						maxData[c] = axisMax(data);
-					}
-				}
-		
+	var shapeEncode = {
+		stroke: pointEncode.colors[0],
+		strokeWeight: 0.5,
+		size: 4.5,
+		shapes: [
+			function(x, y, r) {
+				ellipse(x, y, r, r);
+			},
+			function(x, y, r) {
+				line(x, y - r/2, x, y + r/2);
+				line(x - r/2, y, x + r/2, y);
+			},
+			function(x, y, r) {
+				rectMode(CENTER);
+				rect(x, y, r, r);
+			},
+			function(x, y, r) {
+				triangle(x, y - r, x - 2*r/1.73, y + r, x + 2*r/1.73, y + r);
+			},
+			function() {
+				quad(x, y - r, x + r, y, x, y + r, x - r, y);
 			}
-		
-		}
+		]
+	};
 	
-		// update mid based on new min and max
-		for (var i = 1; i < attr.length; i++) {
-			midData[i] = (maxData[i] + minData[i])/2;
-			if (midData[i] >= 10) {
-				midData[i] = Math.round(midData[i]);
-			}
-		}
+	// Helper function section
 	
-	
-		//update axisIntervals based on min and max
-		// for (var i = 1; i < axisIntervals.length; i++) {
-	// 		var interval = (maxData[i] - minData[i])/axisIntervalFreq;
-	// 		if (maxData[i] > 10 && interval % 5 > 1) {
-	// 			//interval = Math.round(interval);
-	// 			interval = floor(interval - interval % 5 + 5)
-	// 		}
-	// 		axisIntervals[i] = interval;
-	// 	}
-	
-	    plotX1 = majorPad;
-	    plotX2 = width - majorPad;
-	    plotY1 = height - (width - 2 * majorPad) - majorPad;
-	    plotY2 = height - majorPad;
-
-		gridWidth = (width - 2 * majorPad)/(useAttr.length - 1);
-		labelPad = gridWidth * 0.1;	
-		gridX = [];
-		gridY = [];
-		for (var i = 0; i < useAttr.length - 1; i++) {
-			gridX.push(plotX1 + i * gridWidth);
-			gridY.push(plotY1 + i * gridWidth);
-		}
-	
-		xTitle = width/2;
-		yTitle = plotY1 - majorPad;
-	
-		xAxisLabelX = (plotX1 + plotX2)/2;
-		yAxisLabelX = plotX1/2;
-	    xAxisLabelY = height - 25;
-		yAxisLabelY = (plotY1 + plotY2)/2;
-	
-		xLegend = plotX2 - gridWidth;
-		yLegend = plotY1 + 3 * gridWidth;
-	
-		//call noLoop unless doing animation
-		if (!isAnimate) {
-			noLoop();		
-		} else {
-			frameRate(60);
-			plotData("point", false);
-		}
-	
-		drawGrid();
-		drawChartText();
-		drawLegend();
-	
-	}
-
-	function draw() {
-
-		if (isAnimate) {
-			console.log(frameRate());
-			animateStart = animateStart % rowCount;
-		}
-
-		strokeWeight(1);
-	
-		drawAxisLabels();
-		plotData("point", isAnimate);
-	
-	}
-
 	function drawGrid() {
 	    rectMode(CORNER);
 	    noFill();
@@ -188,74 +92,18 @@ function multi_scatter(_attr, _category, _animate) {
 				rect(gridX[j], gridY[i], gridWidth, gridWidth);
 			}
 		}
-	
+		
 	}
-
+	
 	function drawChartText() {
 		// draw title
 		textSize(24);
 		textAlign(CENTER, BOTTOM);
 		fill(0);
 		noStroke();
-		text("Diamonds Scatterplot Matrix", xTitle, yTitle);
-	
-		// code for drawing text inside grid
-		// draw attribute text
-	//	fill(169, 169, 169);
-	// 	textSize(12);
-	// 	textAlign(CENTER, CENTER);
-		// for (var i = 0; i < useAttr.length; i++) {
-	// 		text(attr[useAttr[i]], gridX[gridX.length - 1 - i] + gridWidth/2, gridY[i] + gridWidth/2);
-	// 	}
-	
-	}
+		text(_chartTitle, xTitle, yTitle);
 
-	// function drawAxisLabels() {
-	// 	fill(169, 169, 169);
-	// 	stroke(169, 169, 169);
-	// 	textSize(8);
-	// 	strokeWeight(0.25);
-	//
-	// 	for (var count = 0; count < useAttr.length; count++) {
-	//
-	// 		var low = minData[useAttr[count]] - axisIntervals[useAttr[count]];
-	// 		var high = maxData[useAttr[count]] + axisIntervals[useAttr[count]];
-	// 		var reversedCount = useAttr.length - count - 1;
-	//
-	// 		for (var i = low + axisIntervals[useAttr[count]]; i < high; i += axisIntervals[useAttr[count]]) {
-	//
-	// 			var label = i;
-	// 			if (label < 10) {
-	// 				label = label.toFixed(1);
-	// 			}
-	//
-	// 			//x-axis labels
-	// 			if (count !== 0) {
-	// 				var x = map(i, low, high, plotX1 + reversedCount * gridWidth, plotX1 + (reversedCount + 1) * gridWidth);
-	// 				var y = plotY1 - tickLen;
-	// 				textAlign(CENTER, BOTTOM);
-	// 				text(label, x, plotY1 - tickLabelDist);
-	// 				stroke(0,0,0);
-	// 				line(x, y, x, y + tickLen);
-	// 				noStroke();
-	// 			}
-	//
-	// 			//y-axis labels
-	// 			if (count !== useAttr.length - 1) {
-	// 				y = map(i, low, high, plotY1 + (count + 1) * gridWidth, plotY1 + count * gridWidth);
-	// 				x = plotX1 - tickLen;
-	// 				textAlign(RIGHT, CENTER);
-	// 				text(label, plotX1 - tickLabelDist, y);
-	// 				stroke(0,0,0);
-	// 				line(x, y, x + tickLen, y);
-	// 				noStroke();
-	// 			}
-	//
-	// 		}
-	//
-	// 	}
-	//
-	// }
+	}
 
 	function drawAxisLabels() {
 		fill(169, 169, 169);
@@ -357,7 +205,7 @@ function multi_scatter(_attr, _category, _animate) {
 		//legend key
 		textSize(14);
 		for (var i = 0; i < classes.length; i++) {
-			fill(pointColors[i]);
+			fill(pointEncode.colors[i]);
 			textAlign(LEFT, CENTER);
 			text(classes[i], xLegend + 5 * padding + keySize, yLegend + padding + yBands * (i + 1) + yBands/2);
 			rectMode(CENTER);
@@ -365,7 +213,7 @@ function multi_scatter(_attr, _category, _animate) {
 		}
 	
 	}
-
+	
 	function plotData(encoding, animate) {
 		fill(0);
 		var numData = 0;
@@ -382,24 +230,21 @@ function multi_scatter(_attr, _category, _animate) {
 		for (var data = startIndex; data < (startIndex + numData); data++) {
 			var adjusted = data % rowCount;
 			for (var row = 0; row < gridY.length; row++) {
-				var cat = source.getNum(adjusted, category.name);
+				var cat = source.getString(adjusted, category.name);
 				var attrY = useAttr[row];
 				var y = map(source.getNum(adjusted, attrY), minData[attrY], maxData[attrY], gridY[row] + gridWidth - labelPad, gridY[row] + labelPad);					
 				for (var col = 0; col < (gridX.length - row); col++) {
 					var attrX = useAttr[useAttr.length - col - 1];
 					var x = map(source.getNum(adjusted, attrX), minData[attrX], maxData[attrX], gridX[col] + labelPad, gridX[col] + gridWidth - labelPad);
-					blendMode(REPLACE);
-					stroke(pointColors[cat]);
 			
-					if (encoding === "point") {
-						//strokeWeight(pointEncode.strokeWeight);
-						//point(x,y);
-						strokeWeight(shapeEncode.strokeWeight);
+					if (encoding === "color_point") {
+						strokeWeight(pointEncode.strokeWeight);
 						//noStroke();				//TODO change if want white stroke around circle
 						stroke(255);
-						fill(pointColors[cat]);
-						ellipse(x, y, shapeEncode.size, shapeEncode.size);
-					} else if (encoding === "shape") {
+						fill(pointEncode.colors[classes.indexOf(cat)]);
+						ellipse(x, y, pointEncode.size, pointEncode.size);
+					} else if (encoding === "color_shape") {			
+						stroke(pointEncode.colors[classes.indexOf(cat)]);
 						strokeWeight(shapeEncode.strokeWeight);
 						noFill();
 						//Either circles or '+' marks: comment out unused one
@@ -416,58 +261,7 @@ function multi_scatter(_attr, _category, _animate) {
 			animateStart = animateStart % rowCount;
 		}
 	}
-
-	function drawShapePoints(cat, x, y) {
-		var diameter = shapeEncode.size;
-		var radius = diameter/2;
-		switch(cat) {
-		case 0:
-			ellipse(x, y, diameter, diameter);
-			break;
-		case 1:
-			triangle(x, y - radius, x - diameter/1.73, y + radius, x + diameter/1.73, y + radius);
-			break;
-		case 2:
-			rectMode(CENTER);
-			rect(x, y, diameter, diameter);
-			break;
-		case 3:
-			quad(x, y - radius, x + radius, y, x, y + radius, x - radius, y);
-			break;
-		case 4:
-			star(x, y, radius/3, radius, 5);
-		}
-	}
-
-	function star(x, y, radius1, radius2, npoints) {
-	  var angle = TWO_PI / npoints;
-	  var halfAngle = angle/2.0;
-	  beginShape();
-	  for (var a = 0; a < TWO_PI; a += angle) {
-	    var sx = x + cos(a) * radius2;
-	    var sy = y + sin(a) * radius2;
-	    vertex(sx, sy);
-	    sx = x + cos(a+halfAngle) * radius1;
-	    sy = y + sin(a+halfAngle) * radius1;
-	    vertex(sx, sy);
-	  }
-	  endShape(CLOSE);
-	}
-
-	function plusMark(x, y, radius) {
-		line(x, y - radius/2, x, y + radius/2);
-		line(x - radius/2, y, x + radius/2, y);
-	}
-
-	function shuffleIndex(indexArray) {
-		for (var i = indexArray.length - 1; i >= 0; i--) {
-			var j = Math.floor(Math.random() * i);
-			var temp = indexArray[i];
-			indexArray[i] = indexArray[j];
-			indexArray[j] = temp;
-		}
-	}
-
+	
 	function axisMin(origMin) {
 		if (origMin > 10) {
 			origMin -= origMin % 5
@@ -482,6 +276,95 @@ function multi_scatter(_attr, _category, _animate) {
 		return origMax;
 	}
 	
+	// p5 functions
+	main.preload = function() {
+		source = loadTable(dataSource, "csv", "header");
+	}
+	
+	main.setup = function() {
+		createCanvas(855, 900);
+		background(255);
+		rowCount = source.getRowCount();
+	
+		//get min and max
+		for (var i = 0; i < rowCount; i++) {
+		
+			// update min and max based on dataset
+			for (var c = 0; c < useAttr.length; c++) {
+			
+				var data = source.getNum(i, useAttr[c]);
+			
+				if (i === 0) {
+					minData[useAttr[c]] = axisMin(data);
+					maxData[useAttr[c]] = axisMax(data);
+				} else {
+					if (axisMin(data) < minData[useAttr[c]]) {
+						minData[useAttr[c]] = axisMin(data);
+					}
+					if (axisMax(data) > maxData[useAttr[c]]) {
+						maxData[useAttr[c]] = axisMax(data);
+					}
+				}
+		
+			}
+		
+		}
+	
+		// update mid based on new min and max
+		for (var i = 0; i < useAttr.length; i++) {
+			midData[useAttr[i]] = (maxData[useAttr[i]] + minData[useAttr[i]])/2;
+			if (midData[useAttr[i]] >= 10) {
+				midData[useAttr[i]] = Math.round(midData[useAttr[i]]);
+			}
+		}
+	
+	    plotX1 = majorPad;
+	    plotX2 = width - majorPad;
+	    plotY1 = height - (width - 2 * majorPad) - majorPad;
+	    plotY2 = height - majorPad;
+
+		gridWidth = (width - 2 * majorPad)/(useAttr.length - 1);
+		labelPad = gridWidth * 0.1;	
+		gridX = [];
+		gridY = [];
+		for (var i = 0; i < useAttr.length - 1; i++) {
+			gridX.push(plotX1 + i * gridWidth);
+			gridY.push(plotY1 + i * gridWidth);
+		}
+	
+		xTitle = width/2;
+		yTitle = plotY1 - majorPad;
+	
+		xAxisLabelX = (plotX1 + plotX2)/2;
+		yAxisLabelX = plotX1/2;
+	    xAxisLabelY = height - 25;
+		yAxisLabelY = (plotY1 + plotY2)/2;
+	
+		xLegend = plotX2 - gridWidth;
+		yLegend = plotY1 + 3 * gridWidth;
+	
+		//call noLoop unless doing animation
+		if (!isAnimate) {
+			noLoop();		
+		} else {
+			frameRate(60);
+			plotData(_encoding, false);
+		}
+	
+		drawGrid();
+		drawChartText();
+		drawLegend();
+		drawAxisLabels();
+		
+	}
+	
+	main.draw = function() {
+		if (isAnimate) {
+			console.log(frameRate());
+		}
+		plotData(_encoding, isAnimate);
+	}
+
 	return main;
 	
 }
