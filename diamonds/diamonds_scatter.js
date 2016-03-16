@@ -3,18 +3,17 @@ var attr = ["","carat","cut","color","clarity","depth","table","price","x","y","
 var category = {name: "cut", index: 2};	//category = cut
 var classes = ["Fair", "Good", "Very Good", "Premium", "Ideal"];
 var useAttr = [1, 5, 6, 7, 8, 9, 10];
-var cut = {Fair: 0, Good: 1, "Very Good": 2, Premium: 3, Ideal: 4};
-var colors = {J: 0, I: 1, H: 2, G: 3, F: 4, E: 5, D: 6};
-var clarity = {I1: 0, SI1: 1, SI2: 2, VS1: 3, VS2: 4, VVS1: 5, VVS2: 6, IF: 7};
+// var cut = {Fair: 0, Good: 1, "Very Good": 2, Premium: 3, Ideal: 4};
+// var colors = {J: 0, I: 1, H: 2, G: 3, F: 4, E: 5, D: 6};
+// var clarity = {I1: 0, SI1: 1, SI2: 2, VS1: 3, VS2: 4, VVS1: 5, VVS2: 6, IF: 7};
 
-var maxData = [0, 0, 0, 0, 0, 43, 43, 326, 0, 0, 0];
-var minData = [0, 5, 4, 6, 7, 79, 95, 18823, 11, 59, 32];
-var midData = [0, 0, 0, 0, 0, 43, 43, 326, 0, 0, 0];
+var maxData = [];
+var minData = [];
+var midData = [];
 var rowCount;
 
 // set up animation variables
-var animateIndex = [];
-var animateNum = 1;		// number of points to draw at a time when animating
+var animateNum = 50;		// number of points to draw at a time when animating
 var animateStart = 0;
 var isAnimate = false;
 
@@ -32,60 +31,68 @@ var gridX, gridY;
 
 // pointColors: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
 // pointColors = ["rgba(27, 158, 119, 1)", "rgba(217, 95, 2, 1)", "rgba(117, 112, 179, 1)", "rgba(231, 41, 138, 1)", "rgba(102, 166, 30, 1)"];
-var pointColors = ["rgba(76, 114, 176, 1)", "rgba(85, 168, 104, 1)", "rgba(196, 78, 82, 1)", "rgba(129, 114, 178, 1)", "rgba(204, 185, 116, 1)"];
+// var pointColors = ["rgba(76, 114, 176, 1)", "rgba(85, 168, 104, 1)", "rgba(196, 78, 82, 1)", "rgba(129, 114, 178, 1)", "rgba(204, 185, 116, 1)"];
 
 // plot points attributes
 var pointEncode = {
-	strokeWeight: 2
+	strokeWeight: 0.3,
+	size: 4.5,
+	colors: ["rgba(76, 114, 176, 1)", "rgba(85, 168, 104, 1)", "rgba(196, 78, 82, 1)", "rgba(129, 114, 178, 1)", "rgba(204, 185, 116, 1)"]
 }
 var shapeEncode = {
+	stroke: pointEncode.colors[0],
 	strokeWeight: 0.3,
 	size: 4.5
 };
 
 function preload() {
-	source = loadTable("data/diamonds1000.csv", "csv", "header");
+	source = loadTable("data/diamonds100.csv", "csv", "header");
 }
 
 function setup() {
 	
 	createCanvas(855, 900);
+	background(255);
 	//saveFrames("diamonds1000Chart", "png", 10, 5);
+	//saveFrames("diamondsAllChart", "png", 1, 1);
 	rowCount = source.getRowCount();
 	
 	//get min and max
 	for (var i = 0; i < rowCount; i++) {
 		
-		//fill in randomize index
-		animateIndex.push(i);
-		
-		source.setNum(i, "cut", cut[source.getString(i,"cut")]);
-		source.setNum(i, "color", colors[source.getString(i,"color")]);
-		source.setNum(i, "clarity", clarity[source.getString(i,"clarity")]);
+		// source.setNum(i, "cut", cut[source.getString(i,"cut")]);
+		// source.setNum(i, "color", colors[source.getString(i,"color")]);
+ 		// source.setNum(i, "clarity", clarity[source.getString(i,"clarity")]);
 		
 		// update min and max based on dataset
-		for (var c = 1; c < attr.length; c++) {
-			var data = source.getNum(i, c);
-			if (axisMin(data) < minData[c]) {
-				minData[c] = axisMin(data);
+		for (var c = 0; c < useAttr.length; c++) {
+			
+			var data = source.getNum(i, useAttr[c]);
+			
+			if (i === 0) {
+				minData[useAttr[c]] = axisMin(data);
+				maxData[useAttr[c]] = axisMax(data);
+			} else {
+				if (axisMin(data) < minData[useAttr[c]]) {
+					minData[useAttr[c]] = axisMin(data);
+				}
+				if (axisMax(data) > maxData[useAttr[c]]) {
+					maxData[useAttr[c]] = axisMax(data);
+				}
 			}
-			if (axisMax(data) > maxData[c]) {
-				maxData[c] = axisMax(data);
-			}
+		
 		}
 		
 	}
 	
 	// update mid based on new min and max
-	for (var i = 1; i < attr.length; i++) {
-		midData[i] = (maxData[i] + minData[i])/2;
-		if (midData[i] >= 10) {
-			midData[i] = Math.round(midData[i]);
+	for (var i = 0; i < useAttr.length; i++) {
+		midData[useAttr[i]] = (maxData[useAttr[i]] + minData[useAttr[i]])/2;
+		if (midData[useAttr[i]] >= 10) {
+			midData[useAttr[i]] = Math.round(midData[useAttr[i]]);
 		}
 	}
 	
-	//shuffle randomized index
-	shuffleIndex(animateIndex);
 	
 	//update axisIntervals based on min and max
 	// for (var i = 1; i < axisIntervals.length; i++) {
@@ -132,11 +139,12 @@ function setup() {
 	
 	drawGrid();
 	drawChartText();
+	drawLegend();
 	
 }
 
 function draw() {
-	//background(255);	
+
 	if (isAnimate) {
 		console.log(frameRate());
 	}
@@ -145,7 +153,6 @@ function draw() {
 	
 	drawAxisLabels();
 	plotData("point", isAnimate);
-	drawLegend();
 	
 }
 
@@ -329,7 +336,7 @@ function drawLegend() {
 	//legend key
 	textSize(14);
 	for (var i = 0; i < classes.length; i++) {
-		fill(pointColors[i]);
+		fill(pointEncode.colors[i]);
 		textAlign(LEFT, CENTER);
 		text(classes[i], xLegend + 5 * padding + keySize, yLegend + padding + yBands * (i + 1) + yBands/2);
 		rectMode(CENTER);
@@ -354,23 +361,23 @@ function plotData(encoding, animate) {
 	for (var data = startIndex; data < (startIndex + numData); data++) {
 		var adjusted = data % rowCount;
 		for (var row = 0; row < gridY.length; row++) {
-			var cat = source.getNum(adjusted, category.name);
+			var cat = source.getString(adjusted, category.name);
 			var attrY = useAttr[row];
 			var y = map(source.getNum(adjusted, attrY), minData[attrY], maxData[attrY], gridY[row] + gridWidth - labelPad, gridY[row] + labelPad);					
 			for (var col = 0; col < (gridX.length - row); col++) {
 				var attrX = useAttr[useAttr.length - col - 1];
 				var x = map(source.getNum(adjusted, attrX), minData[attrX], maxData[attrX], gridX[col] + labelPad, gridX[col] + gridWidth - labelPad);
-				blendMode(REPLACE);
-				stroke(pointColors[cat]);
+				//blendMode(REPLACE);
 			
 				if (encoding === "point") {
-					//strokeWeight(pointEncode.strokeWeight);
+					strokeWeight(pointEncode.strokeWeight);
 					//point(x,y);
-					strokeWeight(shapeEncode.strokeWeight);
+					//noStroke();				//TODO change if want white stroke around circle
 					stroke(255);
-					fill(pointColors[cat]);
-					ellipse(x, y, shapeEncode.size, shapeEncode.size);
-				} else if (encoding === "shape") {
+					fill(pointEncode.colors[classes.indexOf(cat)]);
+					ellipse(x, y, pointEncode.size, pointEncode.size);
+				} else if (encoding === "shape") {			//TODO Need to fix shape encoding
+					stroke(shapeEncode.stroke);
 					strokeWeight(shapeEncode.strokeWeight);
 					noFill();
 					//Either circles or '+' marks: comment out unused one
